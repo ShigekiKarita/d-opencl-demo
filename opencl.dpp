@@ -1,0 +1,2 @@
+module opencl;
+#include <CL/cl.h>
