@@ -6,31 +6,38 @@ import opencl_enum;
 import testing : checkCl, checkClFun;
 
 
+/// see https://www.khronos.org/registry/OpenCL/sdk/1.0/docs/man/xhtml/clGetDeviceInfo.html
 @nogc nothrow
 void printDeviceInfo(cl_device_id device)
 {
     import core.stdc.stdio : printf;
-    cl_ulong valueSize;
-    char* value;
     import std.typecons : tuple;
+
+    // print string info
+    cl_ulong len;
+    char* p;
     static foreach (s; tuple("CL_DEVICE_NAME", "CL_DEVICE_VERSION", "CL_DRIVER_VERSION", "CL_DEVICE_OPENCL_C_VERSION"))
     {
         {
             mixin("enum d = " ~ s ~ ";");
             // print device name
-            clGetDeviceInfo(device, d, 0, null, &valueSize);
-            value = cast(char*) malloc(valueSize);
-            clGetDeviceInfo(device, d, valueSize, value, null);
-            printf("%s: %s\n", s.ptr, value);
-            free(value);
+            clGetDeviceInfo(device, d, 0, null, &len);
+            p = cast(char*) malloc(len);
+            clGetDeviceInfo(device, d, len, p, null);
+            printf("%-40s: %s\n", s.ptr, p);
+            free(p);
         }
     }
 
-    // print parallel compute units
-    cl_uint maxComputeUnits;
-    clGetDeviceInfo(device, CL_DEVICE_MAX_COMPUTE_UNITS,
-                    maxComputeUnits.sizeof, &maxComputeUnits, null);
-    printf("CL_DEVICE_MAX_COMPUTE_UNITS: %d\n", maxComputeUnits);
+    // print size info
+    static foreach (s; tuple("CL_DEVICE_MAX_CLOCK_FREQUENCY", "CL_DEVICE_MAX_COMPUTE_UNITS", "CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS", "CL_DEVICE_GLOBAL_MEM_SIZE", "CL_DEVICE_LOCAL_MEM_SIZE", "CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE", "CL_DEVICE_MAX_MEM_ALLOC_SIZE"))
+    {
+        {
+            mixin("enum d = " ~ s ~ ";");
+            clGetDeviceInfo(device, d, len.sizeof, &len, null);
+            printf("%-40s: %ld\n", s.ptr, len);
+        }
+    }
 }
 
 @nogc

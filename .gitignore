@@ -1,0 +1,9 @@
+*
+
+!.gitignore
+!Makefile
+!main.d
+!testing.d
+!*.awk
+!*.dpp
+!*.md
